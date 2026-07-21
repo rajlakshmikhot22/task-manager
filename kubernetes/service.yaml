@@ -1,0 +1,67 @@
+---
+# ═══════════════════════════════════
+# PostgreSQL Service (Headless)
+# ═══════════════════════════════════
+apiVersion: v1
+kind: Service
+metadata:
+  name: taskflow-postgres-svc
+  namespace: taskflow
+  labels:
+    app: taskflow
+    component: database
+spec:
+  clusterIP: None
+  selector:
+    app: taskflow
+    component: database
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+---
+# ═══════════════════════════════════
+# Backend Service
+# ═══════════════════════════════════
+apiVersion: v1
+kind: Service
+metadata:
+  name: taskflow-backend-svc
+  namespace: taskflow
+  labels:
+    app: taskflow
+    component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: taskflow
+    component: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+  sessionAffinity: ClientIP
+---
+# ═══════════════════════════════════
+# Frontend Service (LoadBalancer or NodePort)
+# ═══════════════════════════════════
+apiVersion: v1
+kind: Service
+metadata:
+  name: taskflow-frontend-svc
+  namespace: taskflow
+  labels:
+    app: taskflow
+    component: frontend
+spec:
+  type: LoadBalancer  # Use NodePort for local clusters or LoadBalancer for cloud
+  selector:
+    app: taskflow
+    component: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      # Uncomment for NodePort type
+      # nodePort: 30080
+  sessionAffinity: ClientIP

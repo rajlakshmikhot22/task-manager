@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow — Task Management System</title>
+  <meta name="description" content="Professional Task Management System" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- ════════════════════════════════════════════════
+       AUTH OVERLAY
+  ═══════════════════════════════════════════════════ -->
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">TaskFlow</span>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form" class="auth-form">
+        <h2>Welcome back</h2>
+        <p class="auth-subtitle">Sign in to your account</p>
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <div class="input-with-icon">
+            <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+            <button type="button" class="toggle-password" data-target="login-password">👁</button>
+          </div>
+        </div>
+        <button id="btn-login" class="btn btn-primary btn-full">Sign In</button>
+        <p class="auth-switch">Don't have an account? <a href="#" id="show-register">Create one</a></p>
+        <div class="demo-hint">
+          <small>Demo admin: <strong>admin@taskmanager.com</strong> / <strong>Admin@123456</strong></small>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" class="auth-form hidden">
+        <h2>Create account</h2>
+        <p class="auth-subtitle">Get started for free</p>
+        <div class="form-group">
+          <label for="reg-fullname">Full Name</label>
+          <input type="text" id="reg-fullname" placeholder="Jane Doe" />
+        </div>
+        <div class="form-group">
+          <label for="reg-username">Username</label>
+          <input type="text" id="reg-username" placeholder="jane_doe" />
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <div class="input-with-icon">
+            <input type="password" id="reg-password" placeholder="Min 8 chars, upper, lower, digit" />
+            <button type="button" class="toggle-password" data-target="reg-password">👁</button>
+          </div>
+        </div>
+        <button id="btn-register" class="btn btn-primary btn-full">Create Account</button>
+        <p class="auth-switch">Already have an account? <a href="#" id="show-login">Sign in</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       MAIN APP SHELL
+  ═══════════════════════════════════════════════════ -->
+  <div id="app" class="app hidden">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">TaskFlow</span>
+        <button id="sidebar-close" class="sidebar-close">✕</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">📊</span><span class="nav-label">Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-page="tasks">
+          <span class="nav-icon">📋</span><span class="nav-label">My Tasks</span>
+        </a>
+        <a href="#" class="nav-item" data-page="profile">
+          <span class="nav-icon">👤</span><span class="nav-label">Profile</span>
+        </a>
+        <a href="#" class="nav-item" data-page="admin" id="admin-nav-item" style="display:none">
+          <span class="nav-icon">🛡</span><span class="nav-label">Admin Panel</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="avatar-sm" id="sidebar-avatar">?</div>
+          <div>
+            <div id="sidebar-username" class="sidebar-uname">Loading…</div>
+            <div id="sidebar-role" class="sidebar-role">user</div>
+          </div>
+        </div>
+        <button id="btn-logout" class="btn btn-ghost btn-sm">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Sidebar overlay (mobile) -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Main content area -->
+    <div class="main-wrapper">
+      <!-- Top Navbar -->
+      <header class="topbar">
+        <button id="menu-toggle" class="menu-toggle">☰</button>
+        <div class="topbar-title" id="page-title">Dashboard</div>
+        <div class="topbar-actions">
+          <button id="theme-toggle" class="btn btn-ghost btn-icon" title="Toggle theme">🌙</button>
+          <div class="topbar-user">
+            <div class="avatar-sm" id="topbar-avatar">?</div>
+            <span id="topbar-username">User</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page: Dashboard -->
+      <main id="page-dashboard" class="page active">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <p class="page-subtitle" id="greeting-text">Good morning!</p>
+        </div>
+
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card" data-color="blue">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-total">—</div>
+              <div class="stat-label">Total Tasks</div>
+            </div>
+          </div>
+          <div class="stat-card" data-color="yellow">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-todo">—</div>
+              <div class="stat-label">To Do</div>
+            </div>
+          </div>
+          <div class="stat-card" data-color="purple">
+            <div class="stat-icon">🔄</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-inprogress">—</div>
+              <div class="stat-label">In Progress</div>
+            </div>
+          </div>
+          <div class="stat-card" data-color="green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-completed">—</div>
+              <div class="stat-label">Completed</div>
+            </div>
+          </div>
+          <div class="stat-card" data-color="red">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-duetoday">—</div>
+              <div class="stat-label">Due Today</div>
+            </div>
+          </div>
+          <div class="stat-card" data-color="orange">
+            <div class="stat-icon">⚠</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-overdue">—</div>
+              <div class="stat-label">Overdue</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3>Task Status</h3>
+            <div class="chart-container"><canvas id="status-chart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Priority Breakdown</h3>
+            <div class="chart-container"><canvas id="priority-chart"></canvas></div>
+          </div>
+          <div class="chart-card chart-wide">
+            <h3>Completion Rate</h3>
+            <div class="completion-rate-display">
+              <div class="rate-circle">
+                <canvas id="rate-chart"></canvas>
+                <div class="rate-label" id="rate-label">0%</div>
+              </div>
+              <div class="rate-meta" id="rate-meta"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Page: Tasks -->
+      <main id="page-tasks" class="page">
+        <div class="page-header">
+          <h1>My Tasks</h1>
+          <button class="btn btn-primary" id="btn-new-task">+ New Task</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+          <input type="search" id="task-search" placeholder="Search tasks…" class="filter-input" />
+          <select id="filter-status" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="todo">To Do</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <select id="filter-priority" class="filter-select">
+            <option value="">All Priorities</option>
+            <option value="urgent">Urgent</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select id="filter-sort" class="filter-select">
+            <option value="created_at-desc">Newest First</option>
+            <option value="created_at-asc">Oldest First</option>
+            <option value="due_date-asc">Due Date ↑</option>
+            <option value="due_date-desc">Due Date ↓</option>
+            <option value="priority-desc">Priority High→Low</option>
+            <option value="title-asc">Title A–Z</option>
+          </select>
+          <button id="btn-clear-filters" class="btn btn-ghost btn-sm">Clear</button>
+        </div>
+
+        <!-- Task list -->
+        <div id="task-list" class="task-list"></div>
+        <div id="task-pagination" class="pagination"></div>
+      </main>
+
+      <!-- Page: Profile -->
+      <main id="page-profile" class="page">
+        <div class="page-header"><h1>My Profile</h1></div>
+        <div class="profile-layout">
+          <div class="profile-card">
+            <div class="avatar-upload">
+              <div class="avatar-lg" id="profile-avatar-display">?</div>
+              <label for="avatar-input" class="btn btn-ghost btn-sm">Change Photo</label>
+              <input type="file" id="avatar-input" accept="image/*" class="hidden" />
+            </div>
+            <div class="profile-meta">
+              <div class="profile-name" id="profile-fullname">—</div>
+              <div class="profile-email" id="profile-email">—</div>
+              <div class="profile-badge" id="profile-role">user</div>
+            </div>
+          </div>
+
+          <div class="profile-forms">
+            <div class="card">
+              <h3>Edit Profile</h3>
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="pf-fullname" placeholder="Jane Doe" />
+              </div>
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="pf-username" placeholder="jane_doe" />
+              </div>
+              <div class="form-group">
+                <label>Bio</label>
+                <textarea id="pf-bio" rows="3" placeholder="Tell us about yourself…"></textarea>
+              </div>
+              <button id="btn-save-profile" class="btn btn-primary">Save Changes</button>
+            </div>
+
+            <div class="card">
+              <h3>Change Password</h3>
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" id="pf-cur-pass" placeholder="••••••••" />
+              </div>
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="pf-new-pass" placeholder="••••••••" />
+              </div>
+              <button id="btn-change-pass" class="btn btn-primary">Update Password</button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Page: Admin -->
+      <main id="page-admin" class="page">
+        <div class="page-header"><h1>Admin Panel</h1></div>
+        <div class="admin-stats-row" id="admin-stats-row"></div>
+        <div class="card">
+          <div class="card-header">
+            <h3>All Users</h3>
+            <span id="admin-user-count" class="badge">0</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="admin-users-table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Username</th><th>Email</th>
+                  <th>Role</th><th>Status</th><th>Joined</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-body"></tbody>
+            </table>
+          </div>
+          <div id="admin-user-pagination" class="pagination"></div>
+        </div>
+      </main>
+    </div><!-- /.main-wrapper -->
+  </div><!-- /#app -->
+
+  <!-- ════════ TASK MODAL ════════ -->
+  <div id="task-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">New Task</h3>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="modal-task-id" />
+        <div class="form-group">
+          <label>Title <span class="required">*</span></label>
+          <input type="text" id="task-title" placeholder="What needs to be done?" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="task-description" rows="3" placeholder="Add details…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="task-priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="task-status">
+              <option value="todo" selected>To Do</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="datetime-local" id="task-due-date" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="btn-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-modal-save">Save Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Loading spinner -->
+  <div id="global-loader" class="global-loader hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

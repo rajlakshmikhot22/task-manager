@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskflow-config
+  namespace: taskflow
+  labels:
+    app: taskflow
+data:
+  APP_NAME: "Task Manager API"
+  APP_VERSION: "1.0.0"
+  ENVIRONMENT: "production"
+  DEBUG: "false"
+  ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  RATE_LIMIT_PER_MINUTE: "60"
+  MAX_FILE_SIZE_MB: "5"
+  UPLOAD_DIR: "uploads"
+  CORS_ORIGINS: '["https://taskflow.example.com"]'
+  POSTGRES_DB: "taskmanager"
+  POSTGRES_USER: "taskflow"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: taskflow
+  labels:
+    app: taskflow
+data:
+  nginx.conf: |
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        gzip on;
+        gzip_vary on;
+        gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+
+        location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+
+        location = /health {
+            return 200 'OK';
+            add_header Content-Type text/plain;
+        }
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /api/ {
+            proxy_pass http://taskflow-backend-svc:8000;
+            proxy_set_header Host              $host;
+            proxy_set_header X-Real-IP         $remote_addr;
+            proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /uploads/ {
+            proxy_pass http://taskflow-backend-svc:8000;
+        }
+    }
