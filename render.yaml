@@ -11,7 +11,7 @@ services:
     runtime: docker
     dockerfilePath: ./docker/backend.Dockerfile
     dockerContext: ./backend
-    plan: starter            # free, starter, standard, pro
+    plan: free            # free, starter, standard, pro
     region: oregon
     branch: main
     autoDeploy: true         # deploy on every push to main
@@ -54,7 +54,7 @@ services:
     runtime: docker
     dockerfilePath: ./docker/frontend.Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
     region: oregon
     branch: main
     autoDeploy: true
